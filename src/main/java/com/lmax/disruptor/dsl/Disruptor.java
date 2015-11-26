@@ -31,6 +31,9 @@ import com.lmax.disruptor.WorkHandler;
 import com.lmax.disruptor.WorkerPool;
 import com.lmax.disruptor.util.Util;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -415,6 +418,67 @@ public class Disruptor<T>
         }
         halt();
     }
+
+    /**
+     * 23/12/2015 joaquindiez
+     * <p>Waits until all events currently in the disruptor have been processed by all event processors.
+     * It is critical that publishing to the ring buffer has stopped
+     * before calling this method, otherwise it may never return</p>
+     * <p>
+     * <p>This method DO NOT shutdown the executor and keep all process up</p>
+     */
+    public void waitAllEventsProcessed()
+    {
+        try
+        {
+            waitAllEventsProcessed(-1, TimeUnit.MILLISECONDS);
+        }
+        catch (final TimeoutException e)
+        {
+            exceptionHandler.handleOnShutdownException(e);
+        }
+    }
+
+    /**
+     * 23/12/2015 joaquindiez
+     *
+     * <p>Waits until all events currently in the disruptor have been processed by all event processors.
+     * </p>
+     * <p>
+     * <p>This method DO NOT shutdown the executor and keep all process upr</p>
+     */
+    public void waitAllEventsProcessed(final long timeout, final TimeUnit timeUnit) throws TimeoutException
+    {
+        final long timeOutAt = System.currentTimeMillis() + timeUnit.toMillis(timeout);
+        while (hasBacklog())
+        {
+            if (timeout >= 0 && System.currentTimeMillis() > timeOutAt)
+            {
+                throw TimeoutException.INSTANCE;
+            }
+            // Busy spin
+        }
+    }
+
+    public List<EventHandler<T>> getEventHandlers(){
+
+        List<EventHandler<T>> ret = new ArrayList<EventHandler<T>>();
+
+        Iterator<ConsumerInfo> iterator = this.consumerRepository.iterator();
+
+        while (iterator.hasNext()) {
+            ConsumerInfo consumerInfo = iterator.next();
+            if ( consumerInfo instanceof  EventProcessorInfo){
+                EventProcessorInfo epi = (EventProcessorInfo)consumerInfo;
+                EventHandler handler = epi.getHandler();
+                if (handler!= null) ret.add(handler);
+            }
+        }
+
+        return ret;
+
+    }
+
 
     /**
      * The {@link RingBuffer} used by this Disruptor.  This is useful for creating custom
