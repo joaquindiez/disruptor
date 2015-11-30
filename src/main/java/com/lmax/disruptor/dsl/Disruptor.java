@@ -460,15 +460,18 @@ public class Disruptor<T>
         }
     }
 
-    public List<EventHandler<T>> getEventHandlers(){
+    public List<EventHandler<T>> getEventHandlers()
+    {
 
         List<EventHandler<T>> ret = new ArrayList<EventHandler<T>>();
 
         Iterator<ConsumerInfo> iterator = this.consumerRepository.iterator();
 
-        while (iterator.hasNext()) {
+        while (iterator.hasNext())
+        {
             ConsumerInfo consumerInfo = iterator.next();
-            if ( consumerInfo instanceof  EventProcessorInfo){
+            if (consumerInfo instanceof  EventProcessorInfo)
+            {
                 EventProcessorInfo epi = (EventProcessorInfo)consumerInfo;
                 EventHandler handler = epi.getHandler();
                 if (handler!= null) ret.add(handler);
