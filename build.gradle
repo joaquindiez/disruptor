@@ -169,7 +169,7 @@ uploadArchives {
 
 uploadArchives {
     repositories.mavenDeployer {
-        repository(url: "${ltrepo}/libs-${project.version.endsWith('-SNAPSHOT') ? 'snapshot' : 'release'}-local") {
+        repository(url: "${ltrepo}/libs-${version.toString().endsWith('-SNAPSHOT') ? 'snapshot' : 'release'}-local") {
             authentication(userName: "admin", password: "password")
         }
     }
