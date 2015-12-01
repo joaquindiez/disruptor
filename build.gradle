@@ -153,6 +153,7 @@ signing {
     sign configurations.archives
 }
 
+/*
 uploadArchives {
     repositories.mavenDeployer {
         beforeDeployment { deployment -> signing.signPom(deployment) }
@@ -164,6 +165,16 @@ uploadArchives {
         pom.project(projectPom)
     }
 }
+*/
+
+uploadArchives {
+    repositories.mavenDeployer {
+        repository(url: "${ltrepo}/libs-${project.version.endsWith('-SNAPSHOT') ? 'snapshot' : 'release'}-local") {
+            authentication(userName: "admin", password: "password")
+        }
+    }
+}
+
 
 build.dependsOn perfClasses
 
